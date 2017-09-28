@@ -29,7 +29,11 @@ void myMouseEventHandler(int event, int x , int y , int flags, void *){
   if(isLButtonReleased){
     cv::rectangle(inpaint_mask,prevPt,pt,cv::Scalar(255),-1,8,0);
     //cv::rectangle(whiteLined_image,prevPt,pt,cv::Scalar(255),-1,8,0);
-    cv::Rect roi(prevPt.x,prevPt.y,pt.x-prevPt.x,pt.y-prevPt.y);
+    int x = prevPt.x>=pt.x ? pt.x:prevPt.x;
+    int y = prevPt.y>=pt.y ? pt.y:prevPt.y;
+    int width=std::abs(pt.x-prevPt.x);
+    int height=std::abs(pt.y-prevPt.y);
+    cv::Rect roi(x,y,width,height);
     whiteLined_image(roi)=~whiteLined_image(roi);
     cv::imshow("image", whiteLined_image);
     checker=true;
