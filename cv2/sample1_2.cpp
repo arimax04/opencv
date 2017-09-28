@@ -8,16 +8,16 @@ void myMouseEventHandler(int event, int x , int y , int flags, void *){
   if(whiteLined_image.empty()){
     return;
   }
-
+  static bool checker=true;
   static bool isBrushDown = false;
   static cv::Point prevPt;
   cv::Point pt(x,y);
 
   bool isLButtonPressedBeforeEvent = (bool)(flags & CV_EVENT_FLAG_LBUTTON);
   if(isLButtonPressedBeforeEvent && isBrushDown){
-    cv::line(inpaint_mask,prevPt,pt,cv::Scalar(255),5,8,0);
-    cv::line(whiteLined_image,prevPt,pt,cv::Scalar::all(255),5,8,0);
-    cv::imshow("image", whiteLined_image);
+    //cv::rectangle(inpaint_mask,prevPt,pt,cv::Scalar(255),5,8,0);
+    //cv::rectangle(whiteLined_image,prevPt,pt,cv::Scalar::all(255),5,8,0);
+    //cv::imshow("image", whiteLined_image);
   }
 
   // The XOR below means, isLButtonPressedAfterEvent
@@ -25,11 +25,25 @@ void myMouseEventHandler(int event, int x , int y , int flags, void *){
   // but not equal if the event is mouse down or up.
   bool isLButtonPressedAfterEvent = isLButtonPressedBeforeEvent
     ^ ((event == CV_EVENT_LBUTTONDOWN) || (event == CV_EVENT_LBUTTONUP));
+  bool isLButtonReleased= event==CV_EVENT_LBUTTONUP;
+  if(isLButtonReleased){
+    cv::rectangle(inpaint_mask,prevPt,pt,cv::Scalar(255),-1,8,0);
+    //cv::rectangle(whiteLined_image,prevPt,pt,cv::Scalar(255),-1,8,0);
+    cv::Rect roi(prevPt.x,prevPt.y,pt.x-prevPt.x,pt.y-prevPt.y);
+    whiteLined_image(roi)=~whiteLined_image(roi);
+    cv::imshow("image", whiteLined_image);
+    checker=true;
+  }
   if(isLButtonPressedAfterEvent){
-    prevPt = pt;
+    if(checker){
+      prevPt=pt;
+      checker=false;
+    }
     isBrushDown = true;
+    std::cout<<"OK!\n";
   }else{
     isBrushDown = false;
+    //cv::imshow("image", whiteLined_image);
   }
 }
 
@@ -50,7 +64,7 @@ int main(int argc, char *argv[]){
       "\t\t(before running it, paint something on the image)\n");
 
   // 2. prepare window
-  cv::namedWindow("image",1);
+  cv::namedWindow("image");
 
   // 3. prepare Mat objects for processing-mask and processed-image
   whiteLined_image=original_image.clone();
@@ -101,3 +115,4 @@ int main(int argc, char *argv[]){
   }
   return 0;
 }
+

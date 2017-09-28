@@ -7,13 +7,13 @@
 int main(int argc, char *argv[]){
 
   // 1. prepare VideoCapture Object
-  /* hatena */
+  cv::VideoCapture cap;
   std::string input_index;
   if(argc > 1){ // capture from video file
     input_index = argv[1];
-    /* hatena */
+    cap.open(input_index);
   }else{ // capture from camera
-    /* hatena */
+    cap.open(1);
   }
 
   // 2. prepare VideoWriter Object
@@ -21,8 +21,8 @@ int main(int argc, char *argv[]){
   int rec_mode = 0;
 
   cv::namedWindow("video", 1);
-  /* hatena */
-  /* hatena */
+  cv::VideoWriter output_video;
+  output_video.open(OUT_VIDEO_FILE,CV_FOURCC('M','J','P','G'),30,cv::Size(640,480));
   /* using "MJPG" as the video codec */
 
   if(!cap.isOpened() || !output_video.isOpened()){
@@ -35,14 +35,18 @@ int main(int argc, char *argv[]){
     while(loop_flag){
 
       // 3. capture frame from VideoCapture
-      /* hatena */
+      cap>>frame;
       if(frame.empty()){
         break;
       }
 
       // 4. save frame
       if(rec_mode){
-        /* hatena */
+        output_video<<frame;
+	frame.copyTo(copy_frame);
+	cv::Size s = frame.size();
+	cv::rectangle(copy_frame,cv::Point(0,0),
+		      cv::Point(s.width-1,s.height-1),cv::Scalar(0,0,255),4,8,0);
         /* hatena */
         /* hatena */
         /* hatena */
