@@ -14,12 +14,14 @@ int main(int argc, char *argv[])
   cv::Mat avg_img, sgm_img;
   cv::Mat lower_img, upper_img, tmp_img;
   cv::Mat dst_img, msk_img;
-  
+
+  std::cout << argv[1]<<"^n";
   // 1. initialize VideoCapture 
   if(argc >= 2){
-    cap.open(argv[1]);
+  	std::string input_index=argv[1];
+    cap.open(input_index);
   }else{
-    cap.open(1);
+    cap.open(0);
   }
   if(!cap.isOpened()){
     printf("Cannot open the video.\n");
@@ -52,8 +54,8 @@ int main(int argc, char *argv[])
   for(int i = 0; i < INIT_TIME; i++){
     cap >> frame;
     cv::Mat tmp;
-    /* hatena */
-    /* hatena */
+    frame.convertTo(tmp,avg_img.type());
+    cv::accumulate(tmp,avg_img);
   }
  
   avg_img.convertTo(avg_img, -1, 1.0 / INIT_TIME);
@@ -61,44 +63,37 @@ int main(int argc, char *argv[])
 
   for(int i = 0; i < INIT_TIME; i++){
     cap >> frame;
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
+    frame.convertTo(tmp_img,avg_img.type());
+    cv::subtract(tmp_img,avg_img,tmp_img);
+    cv::pow(tmp_img,2.0,tmp_img);
+    tmp_img.convertTo(tmp_img,-1,2.0);
+    cv::sqrt(tmp_img,tmp_img);
+    cv::accumulate(tmp_img,sgm_img);
   }
 
   sgm_img.convertTo(sgm_img, -1, 1.0 / INIT_TIME);
 
   printf("Background statistics initialization finish\n");
-
-
   bool loop_flag = true;
   while(loop_flag){
     cap >> frame;
-    /* hatena */
-
+    frame.convertTo(tmp_img,tmp_img.type());
     // 4. check whether pixels are background or not
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
-
+    cv::subtract(avg_img,sgm_img,lower_img);
+    cv::subtract(lower_img,Zeta,lower_img);
+    cv::add(avg_img,sgm_img,upper_img);
+    cv::add(upper_img,Zeta,upper_img);
+    cv::inRange(tmp_img,lower_img,upper_img,msk_img);
     // 5. recalculate 
-    /* hatena */
-    /* hatena */
-    /* hatena */
-    /* hatena */
-
+    cv::subtract(tmp_img,avg_img,tmp_img);
+    cv::pow(tmp_img,2.0,tmp_img);
+    tmp_img.convertTo(tmp_img,-1,2.0);
+    cv::sqrt(tmp_img,tmp_img);
     // 6. renew avg_img and sgm_img
-    /* hatena */
-    /* hatena */ 
-
-    /* hatena */
-    /* hatena */
-
+    cv::accumulateWeighted(frame,avg_img,B_PARAM,msk_img);
+    cv::accumulateWeighted(tmp_img,sgm_img,B_PARAM,msk_img);
+    cv::bitwise_not(msk_img,msk_img);
+    cv::accumulateWeighted(tmp_img,sgm_img,T_PARAM,msk_img);
     dst_img = cv::Scalar(0);
     frame.copyTo(dst_img, msk_img);
     

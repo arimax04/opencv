@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
     input_index = argv[1];
     cap.open(input_index);
   }else{ // capture from camera
-    cap.open(1);
+    cap.open(0);
   }
 
   // 2. prepare VideoWriter Object
