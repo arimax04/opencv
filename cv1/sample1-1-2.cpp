@@ -14,7 +14,7 @@ int main(int argc,char *argv[]){
 
   cv::Mat input;
   std::vector<cv::Mat> processed(3);
-  
+
   if(argc==2){
 	      input_file=argv[1];
   }else {
@@ -86,8 +86,7 @@ void convertedge(cv::Mat &input,cv::Mat &processed){
   cv::Mat temp,temp2;
   std::vector<cv::Mat> planes;
   cv::cvtColor(input,temp,CV_BGR2GRAY);
-  cv::Sobel(temp,temp2,CV_32F,1,1);
+  cv::Sobel(temp,temp2,CV_8UC1,1,1);
   cv::convertScaleAbs(temp2,processed,1,0);
   #endif
 }
-

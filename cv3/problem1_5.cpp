@@ -43,7 +43,22 @@ int main(int argc, char *argv[])
     std::vector<cv::Rect> faces;
     // multi-scale face searching
     // image, size, scale, num, flag, smallest rect
+    clock_t start= clock();
     cascade.detectMultiScale(smallImg,faces,1.1,2,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    clock_t end=clock();
+    std::cout<<"duration="<<(double)(end-start)<<"sec.\n";
+    start=clock();
+    cascade.detectMultiScale(smallImg,faces,1.01,2,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    end=clock();
+    std::cout<<"scaleFactor dicrease.duration="<<(double)(end-start)<<"sec.\n";
+    start=clock();
+    cascade.detectMultiScale(smallImg,faces,1.1,10,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    end=clock();
+    std::cout<<"Neighbors increase.duration="<<(double)(end-start)<<"sec.\n";
+    start=clock();
+    cascade.detectMultiScale(smallImg,faces,100,3,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    end=clock();
+    std::cout<<"scaleFactor increase.duration="<<(double)(end-start)<<"sec.\n\n\n\n\n";
     /* hatena */
     /* hatena */
     /* hatena */
