@@ -14,20 +14,23 @@ int main(int argc, char *argv[])
   cv::Mat avg_img, sgm_img;
   cv::Mat lower_img, upper_img, tmp_img;
   cv::Mat dst_img, msk_img;
-
-  std::cout << argv[1]<<"^n";
+  cv::Mat background;
+  
   // 1. initialize VideoCapture 
   if(argc >= 2){
-  	std::string input_index=argv[1];
+    std::string input_index=argv[1];
     cap.open(input_index);
   }else{
-    cap.open(0);
+    cap.open(1);
   }
   if(!cap.isOpened()){
     printf("Cannot open the video.\n");
     exit(0);
   }
-
+  background=cv::imread("fruits.jpg");
+  if(background.empty()){printf("えらー");exit(0);}
+  else{printf("ok\n");}
+  
   // 2. prepare window for showing images
   cv::namedWindow("Input", 1);
   cv::namedWindow("FG", 1);
@@ -46,6 +49,8 @@ int main(int argc, char *argv[])
   
   dst_img.create(s, CV_8UC3);
   msk_img.create(s, CV_8UC1);
+
+  cv::resize(background,background,s);
   
   printf("Background statistics initialization start\n");
   
@@ -59,7 +64,7 @@ int main(int argc, char *argv[])
   }
  
   avg_img.convertTo(avg_img, -1, 1.0 / INIT_TIME);
-  sgm_img = cv::Scalar(0, 0, 0);
+  sgm_img = cv::Scalar(0,0,0);
 
   for(int i = 0; i < INIT_TIME; i++){
     cap >> frame;
@@ -77,7 +82,8 @@ int main(int argc, char *argv[])
   bool loop_flag = true;
   while(loop_flag){
     cap >> frame;
-    frame.convertTo(tmp_img,tmp_img.type());
+    if(frame.empty()){break;}
+    frame.convertTo(tmp_img,avg_img.type());
     // 4. check whether pixels are background or not
     cv::subtract(avg_img,sgm_img,lower_img);
     cv::subtract(lower_img,Zeta,lower_img);
@@ -96,10 +102,10 @@ int main(int argc, char *argv[])
     cv::accumulateWeighted(tmp_img,sgm_img,T_PARAM,msk_img);
     dst_img = cv::Scalar(0);
     frame.copyTo(dst_img, msk_img);
-    
+    frame.copyTo(background,msk_img);
     cv::imshow("Input", frame);
     cv::imshow("FG", dst_img);
-    cv::imshow("mask", msk_img);
+    cv::imshow("mask", background);
     
     char key =cv::waitKey(10);
     if(key == 27){
