@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <stdio.h>
-
+#define WIDTH 640
+#define HEIGHT 320
 int size_of_mosaic = 0;
 
 int main(int argc, char *argv[])
@@ -28,6 +29,10 @@ int main(int argc, char *argv[])
   double scale = 4.0;
   cv::Mat gray, smallImg(cv::saturate_cast<int>(frame.rows/scale),
                cv::saturate_cast<int>(frame.cols/scale), CV_8UC1);
+  
+  cv::Mat hsv_skin_img=cv::Mat(cv::Size(frame.rows/scale,frame.cols/scale),CV_8UC1);
+  cv::Mat smooth_img;
+  cv::Mat hsv_img;
 
   for(;;){
     
@@ -39,13 +44,20 @@ int main(int argc, char *argv[])
     // 5. scale-down the image
     cv::resize(gray,smallImg,smallImg.size(),0,0,cv::INTER_LINEAR);
     cv::equalizeHist(smallImg,smallImg);
+
+    //5.5 hsv
+    hsv_skin_img=cv::Scalar(0,0,0);
+    cv::medianBlur(frame,smooth_img,7);//ノイズがあるので平滑化
+    cv::cvtColor(smooth_img,hsv_img,CV_BGR2HSV);//HSVに変換
+     cv::inRange(hsv_img,cv::Scalar(0,58,88),cv::Scalar(25,173,229),hsv_skin_img);
     
     // 6. detect face using Haar-classifier
     std::vector<cv::Rect> faces;
     // multi-scale face searching
     // image, size, scale, num, flag, smallest rect
     clock_t start= clock();
-    cascade.detectMultiScale(smallImg,faces,1.1,2,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    //cascade.detectMultiScale(smallImg,faces,1.1,2,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
+    cascade.detectMultiScale(hsv_skin_img,faces,1.1,2,CV_HAAR_SCALE_IMAGE,cv::Size(30,30));
     clock_t end=clock();
     /*
     std::cout<<"duration="<<(double)(end-start)<<"sec.\n";
